@@ -3,9 +3,11 @@ package testgame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
+import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.effect.Light;
@@ -88,7 +90,7 @@ public class Connect4App extends Application {
 	}
 	
 	
-	private Object placeDisc(Disc disc, int column) {
+	private void placeDisc(Disc disc, int column) {
 		int row = ROWS - 1;
 		do {
 			if (!getDisc(column, row).isPresent())
@@ -103,11 +105,12 @@ public class Connect4App extends Application {
 		discRoot.getChildren().add(disc);
 		disc.setTranslateX(column * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		
+		final int currentRow = row;
 		
 		TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), disc);
 		animation.setToY(row * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		animation.setOnFinished(e -> {
-			if (gameEnded()) {
+			if (gameEnded(column, currentRow)) {
 				gameOver();
 			}
 			
@@ -117,10 +120,31 @@ public class Connect4App extends Application {
 	}
 
 	private void gameOver() {
-		
+		System.out.println("Winner: " + (redMove ? "RED" : "YELLOW"));
 	}
 
-	private boolean gameEnded() {
+	private boolean gameEnded(int column, int row) {
+		//List<Point2D> vertical = IntStream.rangeclosed(row - 3, row + 3)
+		return true;
+	}
+	
+	private boolean checkRange(List<Point2D> points) {
+		int chain = 0;
+		
+		for (Point2D p : points) {
+			int column = (int) p.getX();
+			int row = (int) p.getY();
+			
+			Disc disc = getDisc(column, row).orElse(new Disc(!redMove));
+			if (disc.red == redMove) {
+				chain++;
+				if(chain == 4) {
+					return true;
+				}
+			} else {
+				chain = 0;
+			}
+		}
 		return false;
 	}
 
