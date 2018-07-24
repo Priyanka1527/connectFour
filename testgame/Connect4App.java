@@ -3,6 +3,7 @@ package testgame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javafx.animation.TranslateTransition;
@@ -124,8 +125,24 @@ public class Connect4App extends Application {
 	}
 
 	private boolean gameEnded(int column, int row) {
-		//List<Point2D> vertical = IntStream.rangeclosed(row - 3, row + 3)
-		return true;
+		List<Point2D> vertical = IntStream.rangeClosed(row - 3, row + 3)
+		.mapToObj(r -> new Point2D(column, r))
+		.collect(Collectors.toList());
+		
+		List<Point2D> horizontal = IntStream.rangeClosed(column - 3, column + 3)
+				.mapToObj(c -> new Point2D(c, row))
+				.collect(Collectors.toList());
+		
+		Point2D topleft = new Point2D(column - 3, row - 3);
+		List<Point2D> diagonal1 = IntStream.rangeClosed(0, 6)
+				.mapToObj(i -> topleft.add(i, i))
+				.collect(Collectors.toList());
+		
+		Point2D botleft = new Point2D(column - 3, row + 3);
+		List<Point2D> diagonal2 = IntStream.rangeClosed(0, 6)
+				.mapToObj(i -> botleft.add(i, -i))
+				.collect(Collectors.toList());
+		return checkRange(vertical) || checkRange(horizontal) || checkRange(diagonal1) || checkRange(diagonal2);
 	}
 	
 	private boolean checkRange(List<Point2D> points) {
