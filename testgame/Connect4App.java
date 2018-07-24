@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.swing.JOptionPane;
+
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
@@ -23,16 +25,16 @@ import javafx.util.Duration;
 
 public class Connect4App extends Application {
 
-	private static final int TILE_SIZE = 80;
+	public static final int TILE_SIZE = 60;
 	private static final int COLUMNS = 7;
 	private static final int ROWS = 6;
 	
-	private boolean redMove = true;
+	private boolean yellowMove = true;
 	private Disc[][] grid = new Disc[COLUMNS][ROWS];
 	
 	private Pane discRoot = new Pane();
 	
-	private Parent createContent() {
+	private Parent designLayout() {
 		Pane root = new Pane();
 		root.getChildren().add(discRoot);
 		
@@ -64,7 +66,7 @@ public class Connect4App extends Application {
 		lighting.setLight(light);
 		lighting.setSurfaceScale(5.0);
 		
-		shape.setFill(Color.BLUE);
+		shape.setFill(Color.GREEN);
 		shape.setEffect(lighting);
 		
 		return shape;
@@ -82,14 +84,13 @@ public class Connect4App extends Application {
 			rect.setOnMouseExited(e -> rect.setFill(Color.TRANSPARENT));
 			
 			final int column = x;
-			rect.setOnMouseClicked(e -> placeDisc(new Disc(redMove), column ));
+			rect.setOnMouseClicked(e -> placeDisc(new Disc(yellowMove), column ));
 			
 			list.add(rect);		
 		}
 		
 		return list;
 	}
-	
 	
 	private void placeDisc(Disc disc, int column) {
 		int row = ROWS - 1;
@@ -115,19 +116,31 @@ public class Connect4App extends Application {
 				gameOver();
 			}
 			
-			redMove = !redMove;
+			yellowMove = !yellowMove;
 		});
 		animation.play();
 	}
 
 	private void gameOver() {
-		System.out.println("Winner: " + (redMove ? "RED" : "YELLOW"));
+		//System.out.println("Winner: " + (yellowMove ? "Player1" : "Player2"));
+		String winner = yellowMove ? "Player1" : "Player2";
+		JOptionPane.showMessageDialog(null, "Winner: " + winner);
+		String choice = JOptionPane.showInputDialog("Do you want to continue ?");
+		if(choice.equalsIgnoreCase("yes"))
+		{
+			//code to go
+		}
+		else
+		{
+			System.exit(0);
+			return;
+		}
 	}
 
 	private boolean gameEnded(int column, int row) {
 		List<Point2D> vertical = IntStream.rangeClosed(row - 3, row + 3)
-		.mapToObj(r -> new Point2D(column, r))
-		.collect(Collectors.toList());
+				.mapToObj(r -> new Point2D(column, r))
+				.collect(Collectors.toList());
 		
 		List<Point2D> horizontal = IntStream.rangeClosed(column - 3, column + 3)
 				.mapToObj(c -> new Point2D(c, row))
@@ -152,8 +165,8 @@ public class Connect4App extends Application {
 			int column = (int) p.getX();
 			int row = (int) p.getY();
 			
-			Disc disc = getDisc(column, row).orElse(new Disc(!redMove));
-			if (disc.red == redMove) {
+			Disc disc = getDisc(column, row).orElse(new Disc(!yellowMove));
+			if (disc.yellow == yellowMove) {
 				chain++;
 				if(chain == 4) {
 					return true;
@@ -171,20 +184,9 @@ public class Connect4App extends Application {
 		return Optional.ofNullable(grid[column][row]);
 	}
 
-	private static class Disc extends Circle {
-		private final boolean red;
-		public Disc(boolean red) {
-			super(TILE_SIZE / 2, red ? Color.RED : Color.YELLOW);
-			this.red = red;
-	
-			setCenterX(TILE_SIZE / 2);
-			setCenterY(TILE_SIZE / 2);
-		}
- 	}
-
 	@Override
 	public void start(Stage stage) throws Exception {
-		stage.setScene(new Scene(createContent()));
+		stage.setScene(new Scene(designLayout()));
 		stage.show();
 	}
 	
