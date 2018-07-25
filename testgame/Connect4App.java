@@ -10,6 +10,7 @@ import javax.swing.JOptionPane;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,18 +24,21 @@ import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class Connect4App extends Application {
+public class Connect4App extends Application 
+{
 
 	public static final int TILE_SIZE = 60;
 	private static final int COLUMNS = 7;
 	private static final int ROWS = 6;
 	
+	private Stage primaryStage = null;
 	private boolean yellowMove = true;
 	private Disc[][] grid = new Disc[COLUMNS][ROWS];
 	
 	private Pane discRoot = new Pane();
 	
-	private Parent designLayout() {
+	private Parent designLayout() 
+	{
 		Pane root = new Pane();
 		root.getChildren().add(discRoot);
 		
@@ -45,10 +49,13 @@ public class Connect4App extends Application {
 		return root;
 	}
 	
-	private Shape makeGrid() {
+	private Shape makeGrid() 
+	{
 		Shape shape = new Rectangle((COLUMNS + 1) * TILE_SIZE, (ROWS + 1) * TILE_SIZE);
-		for(int y = 0; y < ROWS; y++) {
-			for (int x = 0; x < COLUMNS; x++) {
+		for(int y = 0; y < ROWS; y++) 
+		{
+			for (int x = 0; x < COLUMNS; x++) 
+			{
 				Circle circle = new Circle(TILE_SIZE / 2);
 				circle.setCenterX(TILE_SIZE / 2);
 				circle.setCenterY(TILE_SIZE / 2);
@@ -72,10 +79,12 @@ public class Connect4App extends Application {
 		return shape;
 	}
 	
-	private List<Rectangle> makecolumns() {
+	private List<Rectangle> makecolumns() 
+	{
 		List<Rectangle> list = new ArrayList<>();
 		
-		for (int x = 0; x < COLUMNS; x++) {
+		for (int x = 0; x < COLUMNS; x++) 
+		{
 			Rectangle rect = new Rectangle(TILE_SIZE, (ROWS + 1) * TILE_SIZE );
 			rect.setTranslateX(x * (TILE_SIZE + 5) + TILE_SIZE / 4);
 			rect.setFill(Color.TRANSPARENT);
@@ -92,9 +101,11 @@ public class Connect4App extends Application {
 		return list;
 	}
 	
-	private void placeDisc(Disc disc, int column) {
+	private void placeDisc(Disc disc, int column) 
+	{
 		int row = ROWS - 1;
-		do {
+		do 
+		{
 			if (!getDisc(column, row).isPresent())
 				break;
 			row--;
@@ -111,8 +122,10 @@ public class Connect4App extends Application {
 		
 		TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), disc);
 		animation.setToY(row * (TILE_SIZE + 5) + TILE_SIZE / 4);
-		animation.setOnFinished(e -> {
-			if (gameEnded(column, currentRow)) {
+		animation.setOnFinished(e -> 
+		{
+			if (gameEnded(column, currentRow)) 
+			{
 				gameOver();
 			}
 			
@@ -121,14 +134,23 @@ public class Connect4App extends Application {
 		animation.play();
 	}
 
-	private void gameOver() {
-		//System.out.println("Winner: " + (yellowMove ? "Player1" : "Player2"));
+	private void gameOver() 
+	{
 		String winner = yellowMove ? "Player1" : "Player2";
 		JOptionPane.showMessageDialog(null, "Winner: " + winner);
 		String choice = JOptionPane.showInputDialog("Do you want to continue ?");
-		if(choice.equalsIgnoreCase("yes"))
-		{
-			//code to go
+		if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
+		{ 
+			Connect4App newApp = new Connect4App();
+			try 
+			{
+				newApp.start(new Stage());
+				primaryStage.close();
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+			}
 		}
 		else
 		{
@@ -137,7 +159,8 @@ public class Connect4App extends Application {
 		}
 	}
 
-	private boolean gameEnded(int column, int row) {
+	private boolean gameEnded(int column, int row) 
+	{
 		List<Point2D> vertical = IntStream.rangeClosed(row - 3, row + 3)
 				.mapToObj(r -> new Point2D(column, r))
 				.collect(Collectors.toList());
@@ -158,7 +181,8 @@ public class Connect4App extends Application {
 		return checkRange(vertical) || checkRange(horizontal) || checkRange(diagonal1) || checkRange(diagonal2);
 	}
 	
-	private boolean checkRange(List<Point2D> points) {
+	private boolean checkRange(List<Point2D> points) 
+	{
 		int chain = 0;
 		
 		for (Point2D p : points) {
@@ -166,32 +190,38 @@ public class Connect4App extends Application {
 			int row = (int) p.getY();
 			
 			Disc disc = getDisc(column, row).orElse(new Disc(!yellowMove));
-			if (disc.yellow == yellowMove) {
+			if (disc.yellow == yellowMove) 
+			{
 				chain++;
-				if(chain == 4) {
+				if(chain == 4) 
+				{
 					return true;
 				}
-			} else {
+			} else 
+			{
 				chain = 0;
 			}
 		}
 		return false;
 	}
 
-	private Optional<Disc>  getDisc(int column, int row) {
+	private Optional<Disc>  getDisc(int column, int row) 
+	{
 		if (column < 0 || column >= COLUMNS || row < 0 || row >= ROWS)
 			return Optional.empty();
 		return Optional.ofNullable(grid[column][row]);
 	}
 
 	@Override
-	public void start(Stage stage) throws Exception {
+	public void start(Stage stage) throws Exception 
+	{
 		stage.setScene(new Scene(designLayout()));
 		stage.show();
+		primaryStage = stage;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
 		launch(args);
 	}
-
 }
