@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Point2D;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -112,7 +111,25 @@ public class Connect4App extends Application
 		} while (row >=0);
 		
 		if (row < 0)
+		{
+			JOptionPane.showMessageDialog(null, "It's a Draw!!");
+			String choice = JOptionPane.showInputDialog("Do you want to continue ?");
+			if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
+			{ 
+				Connect4App newApp = new Connect4App();
+				try 
+				{
+					newApp.start(new Stage());
+					primaryStage.close();
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+				}
+			}
 			return;
+		}
+			
 		
 		grid[column][row] = disc;
 		discRoot.getChildren().add(disc);
