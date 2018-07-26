@@ -31,7 +31,7 @@ public class Connect4App extends Application
 	private static final int ROWS = 6;
 	
 	private Stage primaryStage = null;
-	private boolean yellowMove = true;
+	private boolean movePlayer1 = true;
 	private Disc[][] grid = new Disc[COLUMNS][ROWS];
 	
 	private Pane discRoot = new Pane();
@@ -92,11 +92,9 @@ public class Connect4App extends Application
 			rect.setOnMouseExited(e -> rect.setFill(Color.TRANSPARENT));
 			
 			final int column = x;
-			rect.setOnMouseClicked(e -> placeDisc(new Disc(yellowMove), column ));
-			
+			rect.setOnMouseClicked(e -> placeDisc(new Disc(movePlayer1), column ));
 			list.add(rect);		
 		}
-		
 		return list;
 	}
 	
@@ -112,32 +110,33 @@ public class Connect4App extends Application
 		
 		if (row < 0)
 		{
-			JOptionPane.showMessageDialog(null, "It's a Draw!!");
-			String choice = JOptionPane.showInputDialog("Do you want to continue ?");
-			if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
-			{ 
-				Connect4App newApp = new Connect4App();
-				try 
-				{
-					newApp.start(new Stage());
-					primaryStage.close();
-				} 
-				catch (Exception e) 
-				{
-					e.printStackTrace();
+			if (!getDisc(column, row).isPresent())
+			{
+				JOptionPane.showMessageDialog(null, "It's a Draw!!");
+				String choice = JOptionPane.showInputDialog("Do you want to continue ?");
+				if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
+				{ 
+					Connect4App newApp = new Connect4App();
+					try 
+					{
+						newApp.start(new Stage());
+						primaryStage.close();
+					} 
+					catch (Exception e) 
+					{
+						e.printStackTrace();
+					}
 				}
 			}
 			return;
 		}
-			
-		
 		grid[column][row] = disc;
 		discRoot.getChildren().add(disc);
 		disc.setTranslateX(column * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		
 		final int currentRow = row;
 		
-		TranslateTransition animation = new TranslateTransition(Duration.seconds(0.5), disc);
+		TranslateTransition animation = new TranslateTransition(Duration.seconds(0.1), disc);
 		animation.setToY(row * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		animation.setOnFinished(e -> 
 		{
@@ -146,14 +145,14 @@ public class Connect4App extends Application
 				gameOver();
 			}
 			
-			yellowMove = !yellowMove;
+			movePlayer1 = !movePlayer1;
 		});
 		animation.play();
 	}
 
 	private void gameOver() 
 	{
-		String winner = yellowMove ? "Player1" : "Player2";
+		String winner = movePlayer1 ? "Player1" : "Player2";
 		JOptionPane.showMessageDialog(null, "Winner: " + winner);
 		String choice = JOptionPane.showInputDialog("Do you want to continue ?");
 		if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
@@ -206,8 +205,8 @@ public class Connect4App extends Application
 			int column = (int) p.getX();
 			int row = (int) p.getY();
 			
-			Disc disc = getDisc(column, row).orElse(new Disc(!yellowMove));
-			if (disc.yellow == yellowMove) 
+			Disc disc = getDisc(column, row).orElse(new Disc(!movePlayer1));
+			if (disc.yellow == movePlayer1) 
 			{
 				chain++;
 				if(chain == 4) 
