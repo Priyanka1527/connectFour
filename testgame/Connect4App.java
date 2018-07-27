@@ -30,17 +30,20 @@ public class Connect4App extends Application
 	private static final int COLUMNS = 7;
 	private static final int ROWS = 6;
 	
-	private int drawGame = 0;
 	private Stage primaryStage = null;
-	private boolean movePlayer1 = true;
 	private Disc[][] grid = new Disc[COLUMNS][ROWS];
+	
+	private int drawGame = 0;
 	private int keepTrack[][] = new int[COLUMNS][ROWS];
+	private boolean movePlayer1 = true;
 	
 	private Pane discRoot = new Pane();
 	
 	private Parent designLayout() 
 	{
+		//creating a new pane
 		Pane root = new Pane();
+	
 		root.getChildren().add(discRoot);
 		
 		Shape gridshape = makeGrid();
@@ -52,7 +55,10 @@ public class Connect4App extends Application
 	
 	private Shape makeGrid() 
 	{
+		//creating the field
 		Shape shape = new Rectangle((COLUMNS + 1) * TILE_SIZE, (ROWS + 1) * TILE_SIZE);
+		
+		//creating holed field
 		for(int y = 0; y < ROWS; y++) 
 		{
 			for (int x = 0; x < COLUMNS; x++) 
@@ -66,6 +72,7 @@ public class Connect4App extends Application
 			}
 		}
 		
+		//set the lighting and effects of the field
 		Light.Distant light = new Light.Distant();
 		light.setAzimuth(45.0);
 		light.setElevation(30.0);
@@ -89,11 +96,14 @@ public class Connect4App extends Application
 			rect.setTranslateX(x * (TILE_SIZE + 5) + TILE_SIZE / 4);
 			rect.setFill(Color.TRANSPARENT);
 			
+			//denotes when hovering on a particular column
 			rect.setOnMouseEntered(e -> rect.setFill(Color.rgb(200, 200, 50, 0.3)));
 			rect.setOnMouseExited(e -> rect.setFill(Color.TRANSPARENT));
 			
+			//setting the presently chosen column
 			final int column = x;
 			
+			//calling function to place the disc on the selected column
 			rect.setOnMouseClicked(e -> placeDisc(new Disc(movePlayer1), column ));
 			list.add(rect);		
 		}
@@ -105,6 +115,7 @@ public class Connect4App extends Application
 		int row = ROWS - 1;
 		do 
 		{
+			//check if no disc is present
 			if (!getDisc(column, row).isPresent())
 				break;
 			row--;
@@ -114,8 +125,11 @@ public class Connect4App extends Application
 		{
 			return;		
 		}
-				
+		
+		//Place the disc of the selected column and empty row
 		grid[column][row] = disc;
+		
+		//keeps track of the occupied cells
 		keepTrack[column][row] = 1;
 		
 		for(int i = 0; i < ROWS; i++) 
@@ -128,6 +142,8 @@ public class Connect4App extends Application
 				}
 			}
 		}
+		//the counter drawGame becomes 903 when all the cells get filled
+		//need to come up with a better approach to check this draw condition
 		if (drawGame == 903)
 		{
 			JOptionPane.showMessageDialog(null, "It's a Draw!!");
@@ -157,6 +173,7 @@ public class Connect4App extends Application
 		
 		final int currentRow = row;
 		
+		//dropping the disc and also setting the speed
 		TranslateTransition animation = new TranslateTransition(Duration.seconds(0.1), disc);
 		animation.setToY(row * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		animation.setOnFinished(e -> 
@@ -166,6 +183,7 @@ public class Connect4App extends Application
 				gameOver();
 			}
 			
+			//changing player turn
 			movePlayer1 = !movePlayer1;
 		});
 		animation.play();
@@ -198,6 +216,7 @@ public class Connect4App extends Application
 
 	private boolean gameEnded(int column, int row) 
 	{
+		//Checking all the possible series e.g Vertical, Horizotal and the two diagonals
 		List<Point2D> vertical = IntStream.rangeClosed(row - 3, row + 3)
 				.mapToObj(r -> new Point2D(column, r))
 				.collect(Collectors.toList());
@@ -215,9 +234,12 @@ public class Connect4App extends Application
 		List<Point2D> diagonal2 = IntStream.rangeClosed(0, 6)
 				.mapToObj(i -> botleft.add(i, -i))
 				.collect(Collectors.toList());
+		
+		//returns true if either of the series gives 4
 		return checkRange(vertical) || checkRange(horizontal) || checkRange(diagonal1) || checkRange(diagonal2);
 	}
 	
+	//Logic to check the four way series
 	private boolean checkRange(List<Point2D> points) 
 	{
 		int chain = 0;
