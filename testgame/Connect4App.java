@@ -30,9 +30,11 @@ public class Connect4App extends Application
 	private static final int COLUMNS = 7;
 	private static final int ROWS = 6;
 	
+	private int drawGame = 0;
 	private Stage primaryStage = null;
 	private boolean movePlayer1 = true;
 	private Disc[][] grid = new Disc[COLUMNS][ROWS];
+	private int keepTrack[][] = new int[COLUMNS][ROWS];
 	
 	private Pane discRoot = new Pane();
 	
@@ -81,7 +83,6 @@ public class Connect4App extends Application
 	private List<Rectangle> makecolumns() 
 	{
 		List<Rectangle> list = new ArrayList<>();
-		
 		for (int x = 0; x < COLUMNS; x++) 
 		{
 			Rectangle rect = new Rectangle(TILE_SIZE, (ROWS + 1) * TILE_SIZE );
@@ -92,6 +93,7 @@ public class Connect4App extends Application
 			rect.setOnMouseExited(e -> rect.setFill(Color.TRANSPARENT));
 			
 			final int column = x;
+			
 			rect.setOnMouseClicked(e -> placeDisc(new Disc(movePlayer1), column ));
 			list.add(rect);		
 		}
@@ -110,27 +112,46 @@ public class Connect4App extends Application
 		
 		if (row < 0)
 		{
-			if (!getDisc(column, row).isPresent())
+			return;		
+		}
+				
+		grid[column][row] = disc;
+		keepTrack[column][row] = 1;
+		
+		for(int i = 0; i < ROWS; i++) 
+		{
+			for (int j = 0; j < COLUMNS; j++) 
 			{
-				JOptionPane.showMessageDialog(null, "It's a Draw!!");
-				String choice = JOptionPane.showInputDialog("Do you want to continue ?");
-				if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
-				{ 
-					Connect4App newApp = new Connect4App();
-					try 
-					{
-						newApp.start(new Stage());
-						primaryStage.close();
-					} 
-					catch (Exception e) 
-					{
-						e.printStackTrace();
-					}
+				if (keepTrack[j][i] == 1)
+				{
+					drawGame++;
 				}
 			}
-			return;
 		}
-		grid[column][row] = disc;
+		if (drawGame == 903)
+		{
+			JOptionPane.showMessageDialog(null, "It's a Draw!!");
+			String choice = JOptionPane.showInputDialog("Do you want to continue ?");
+			if(choice.equalsIgnoreCase("yes") || choice.equalsIgnoreCase("y"))
+			{ 
+				Connect4App newApp = new Connect4App();
+				try 
+				{
+					newApp.start(new Stage());
+					primaryStage.close();
+				} 
+				catch (Exception e) 
+				{
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				System.exit(0);
+				return;
+			}
+		}
+		
 		discRoot.getChildren().add(disc);
 		disc.setTranslateX(column * (TILE_SIZE + 5) + TILE_SIZE / 4);
 		
